@@ -216,20 +216,21 @@ def generate_markdown_files():
         app_fixed = random.choice(FIXED_APPS)
         url_fixed = random.choice(FIXED_URLS)
 
-        selected_keywords = random.sample(keywords, min(5, len(keywords)))
-
         memory_zip = io.BytesIO()
         with zipfile.ZipFile(memory_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            for idx, keyword in enumerate(selected_keywords, start=1):
+            for idx, keyword in enumerate(keywords, start=1):
                 safe_keyword = sanitize_filename(keyword)
                 filename_prefix = f"{idx:03d}-"
                 filename = f"{filename_prefix}{safe_keyword}.md"
 
-                other_keywords = random.sample(keywords, min(2, len(keywords)))
-                if keyword not in other_keywords:
+                # Lấy 2 từ khóa phụ, nếu có đủ
+                if len(keywords) > 1:
+                    pool = [k for k in keywords if k != keyword]
+                    num_other = min(2, len(pool))
+                    other_keywords = random.sample(pool, num_other)
                     keyword_list = [keyword] + other_keywords
                 else:
-                    keyword_list = other_keywords
+                    keyword_list = [keyword]
 
                 content = generate_md_content(app_fixed, url_fixed, keyword_list, suffix)
                 zf.writestr(filename, content)
@@ -250,7 +251,9 @@ def generate_markdown_files():
         log_error(err)
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"🚀 Server running on port {port}")
     app.run(host="0.0.0.0", port=port, debug=False)
+
