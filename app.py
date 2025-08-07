@@ -218,12 +218,11 @@ def generate_markdown_files():
 
         memory_zip = io.BytesIO()
         with zipfile.ZipFile(memory_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            for idx, keyword in enumerate(keywords, start=1):
+            for keyword in keywords:
                 safe_keyword = sanitize_filename(keyword)
-                filename_prefix = f"{idx:03d}-"
-                filename = f"{filename_prefix}{safe_keyword}.md"
+                filename = f"{safe_keyword}.md"
 
-                # Lấy 2 từ khóa phụ, nếu có đủ
+                # Lấy 2 từ khóa phụ (nếu có)
                 if len(keywords) > 1:
                     pool = [k for k in keywords if k != keyword]
                     num_other = min(2, len(pool))
@@ -256,4 +255,5 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"🚀 Server running on port {port}")
     app.run(host="0.0.0.0", port=port, debug=False)
+
 
